@@ -10,7 +10,7 @@
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "miscadmin.h"
-
+#include "cdb/cdbvars.h"
 #if PG_VERSION_NUM >= 100000
 #include "utils/queryenvironment.h"
 #include "catalog/index.h"
@@ -501,7 +501,13 @@ sr_planner(Query *parse, int cursorOptions, ParamListInfo boundParams)
 		srplan_planner_hook_next(parse, cursorOptions, boundParams) : \
 		standard_planner(parse, cursorOptions, boundParams))
 #endif
-
+	if (Gp_role != GP_ROLE_DISPATCH)
+	{
+		pl_stmt = call_standard_planner();
+		level--;
+		return pl_stmt;
+	}
+	
 	/* Only save plans for SELECT commands */
 	if (parse->commandType != CMD_SELECT || !cachedInfo.enabled
 			|| cachedInfo.explain_query)
