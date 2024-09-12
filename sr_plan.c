@@ -1108,7 +1108,7 @@ show_plan(PG_FUNCTION_ARGS)
 #elif PG_VERSION_NUM >= 100000
 		ExplainOnePlan(pl_stmt, NULL, es, queryString, NULL, NULL, NULL);
 #else
-		ExplainOnePlan(pl_stmt, NULL, es, queryString, NULL, NULL);
+		ExplainOnePlan(pl_stmt, NULL, es, queryString, NULL, NULL,0);
 #endif
 		ExplainEndOutput(es);
 		Assert(es->indent == 0);
@@ -1205,11 +1205,6 @@ plan_tree_visitor(Plan *plan,
 	{
 		case T_SubqueryScan:
 			plan_tree_visitor(((SubqueryScan *) plan)->subplan, visitor, context);
-			break;
-
-		case T_CustomScan:
-			foreach (l, ((CustomScan *) plan)->custom_plans)
-				plan_tree_visitor((Plan *) lfirst(l), visitor, context);
 			break;
 
 		case T_ModifyTable:
